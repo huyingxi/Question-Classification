@@ -73,9 +73,7 @@ def load_data():
                 word = word.decode("utf-8")
                 if word in word_index:
                     sequence.append(word_index[word])
-                    #print "coming"
                 else:
-                    #print "no"
                     sequence.append(0)
         sequences.append(sequence)
 
@@ -84,13 +82,9 @@ def load_data():
     
     
     labels = to_categorical(np.asarray(labels))
-    
-    #print labels[0],labels[1],labels[2],labels[3],labels[5]
-    
+        
     indices = np.arange(data.shape[0])
-    #print "indices_shape : ",indices
     np.random.shuffle(indices)
-    #print "random indices : ",indices
     data = data[indices]
     labels = labels[indices]
     nb_validation_samples = int(0.2 * data.shape[0])
@@ -119,16 +113,12 @@ if __name__ == "__main__":
             with open('/home/wxr/wxr/TREC/corpus/random_vocab.pkl','rb') as vocab:
                 word_index = pickle.load(vocab)
                 embedding_matrix = pickle.load(vocab)
-            #charvec_model = Word2Vec.load_word2vec_format('/home/wxr/blazer/goole_word2vec300/GoogleNews-vectors-negative300.bin', binary=True)
             x_train, y_train, x_valid, y_valid = load_data()
 
 
             ##############
             #set model
             ##############    
-
-
-
             nb_words = len(word_index)
             print "embedding:%d" % (nb_words + 1)
 
@@ -147,8 +137,6 @@ if __name__ == "__main__":
             ###############
             #building model
             ###############
-            #model-1
-            #char_input = Input(shape=(sequence_length, embedding_dim), dtype='float32')
             word_input = Input(shape=(sequence_length,))
             model1 = embedding_layer1(word_input)
             model1 = Dropout(0.5)(model1)
@@ -165,16 +153,12 @@ if __name__ == "__main__":
 
             print "left_branch.get_shape()",left_branch.get_shape()
             print "right_branch.get_shape()",right_branch.get_shape()
-            #merge link tensor ; Merge link model layer
             lstm_merged = merge([left_branch,right_branch],mode='ave')
             lstm_merged = Reshape([40,300,1])(lstm_merged)
             lstm_merged = Dropout(0.2)(lstm_merged)
             graph_in_temp = merge([model1, model2,lstm_merged],mode='concat',concat_axis=-1)
-            #graph_in_temp = lstm_merged
-            #print "merge befor after : ", graph_in_temp.get_shape()
 
             graph_in = Reshape((40,300,3))(graph_in_temp)
-            #graph_in = Reshape((40,300,1))(graph_in_temp)
 
             print graph_in.get_shape()
 
@@ -189,7 +173,6 @@ if __name__ == "__main__":
 
             conva = merge([conv_11, conv_22, conv_33], mode='concat',concat_axis=-1)
             
-            #conva = merge([conv_11, conv_22], mode='concat',concat_axis=-1)
             conva = Dropout(dropout_prob[1])(conva)
 
             print conva.get_shape()
@@ -202,9 +185,7 @@ if __name__ == "__main__":
             out = Dense(hidden_dims[2], activation='softmax')(out)
 
             total = Model(input=word_input, output=out)
-            #print total.summary()
 
-            #sgd1=keras.optimizers.SGD(lr=0.003, decay=1e-5, momentum=0.9, nesterov=True)
             sgd1=keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-06)
 
             total.compile(optimizer = sgd1, loss='categorical_crossentropy', metrics=["accuracy"])
@@ -216,7 +197,7 @@ if __name__ == "__main__":
 
 
             total.load_weights(load_file)
-            #training data \  validation data \ test data  --- evaluate
+
             print"evaluate:"
             score = total.evaluate(x_train, y_train)
             print('Train loss:' , score[0])
