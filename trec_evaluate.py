@@ -62,9 +62,7 @@ def load_data():
                 word = word.decode("utf-8")
                 if word in word_index:
                     sequence.append(word_index[word])
-                    #print "coming"
                 else:
-                    #print "no"
                     sequence.append(0)
         sequences.append(sequence)
 
